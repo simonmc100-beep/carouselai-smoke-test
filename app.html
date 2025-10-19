@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Application - CarouselAi</title>
+    <style>
+        /* Styles de base de l'application */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        
+        .app-container {
+            width: 100%;
+            max-width: 900px;
+            margin: 20px;
+        }
+
+        /* --- Styles de base des "écrans" --- */
+        .screen {
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            padding: 40px 50px;
+            display: none; /* Caché par défaut */
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Le premier écran est visible */
+        #screen-1 {
+            display: block;
+        }
+
+        /* --- Éléments UI Communs --- */
+        h1, h2, h3 {
+            color: #1a2b4d;
+            margin-top: 0;
+            text-align: center;
+        }
+        h1 { font-size: 2.2rem; }
+        h2 { font-size: 1.8rem; }
+        h3 { font-size: 1.3rem; font-weight: 500; text-align: left; }
+        
+        p { color: #555; text-align: center; font-size: 1.1rem; margin-bottom: 25px;}
+
+        .cta-button {
+            display: block;
+            width: 100%;
+            box-sizing: border-box; /* Important */
+            background-color: #0a66c2;
+            color: #ffffff !important;
+            padding: 16px 32px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: background-color 0.3s ease;
+            border: none;
+            cursor: pointer;
+            text-align: center;
+            margin-top: 20px;
+        }
+        .cta-button:hover { background-color: #004182; }
+        
+        .cta-button.secondary {
+            background-color: #f0f0f0;
+            color: #333 !important;
+        }
+        .cta-button.secondary:hover { background-color: #e0e0e0; }
+        
+        input[type="text"], input[type="url"], input[type="email"], input[type="password"] {
+            width: 100%;
+            padding: 14px;
+            font-size: 1rem;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-sizing: border-box;
+            margin-bottom: 15px;
+        }
+
+        .separator {
+            text-align: center;
+            margin: 20px 0;
+            color: #888;
+        }
+
+        /* --- Styles Spécifiques aux Écrans --- */
+        
+        /* Écran 2 (Concepts) */
+        .concept-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        .concept-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+        }
+        .concept-card h4 {
+            font-size: 1.1rem;
+            color: #1a2b4d;
+            margin-top: 0;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+        .concept-card p {
+            font-size: 0.9rem;
+            color: #555;
+            text-align: left;
+            margin-bottom: 15px;
+        }
+        .concept-card .mockup-visual {
+            background: #f4f7f6;
+            border-radius: 6px;
+            padding: 20px 15px;
+            font-style: italic;
+            font-size: 0.9rem;
+            color: #777;
+            border: 1px dashed #ccc;
+        }
+        
+        /* Écran 3 (Éditeur) */
+        .editor-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+        .editor-controls { text-align: left; }
+        .editor-preview {
+            background: #f4f7f6;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #eee;
+            min-height: 400px;
+        }
+        .editor-controls textarea {
+            width: 100%;
+            box-sizing: border-box;
+            height: 100px;
+            font-family: inherit;
+            font-size: 0.9rem;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            padding: 10px;
+        }
+        
+        /* Écran 4 (Liste d'attente) */
+        #screen-4 {
+            max-width: 500px;
+        }
+        
+        /* Loader */
+        #loader {
+            text-align: center;
+        }
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #0a66c2;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .app-container { margin: 10px; }
+            .screen { padding: 30px 25px; }
+            .editor-layout { grid-template-columns: 1fr; }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+
+        <div class="screen" id="screen-1">
+            <h1>Commençons. (Étape 1/3)</h1>
+            <p>Pour générer vos publicités, dites-nous ce que vous voulez promouvoir.</p>
+            
+            <h3>Option 1 : La voie "magique"</h3>
+            <input type="url" placeholder="Collez l'URL de votre site ou de votre produit (ex: https://...)">
+            
+            <div class="separator">ou</div>
+
+            <h3>Option 2 : La voie "manuelle"</h3>
+            <input type="text" placeholder="Ex: Un logiciel SaaS de compta pour les freelances">
+
+            <button class="cta-button" onclick="goToScreen('loader')">Générer mes concepts (Étape 2) →</button>
+        </div>
+
+        <div class="screen" id="loader">
+            <h2>L'IA analyse votre objectif...</h2>
+            <p>Création des accroches, rédaction des textes et conception de vos visuels en cours...</p>
+            <div class="spinner"></div>
+        </div>
+
+        <div class="screen" id="screen-2">
+            <h1>Mission accomplie ! (Étape 2/3)</h1>
+            <p>Voici 3 concepts pour votre publicité. Choisissez votre préféré.</p>
+            
+            <div class="concept-grid">
+                <div class="concept-card">
+                    <h4>Angle 1 : Le Problème</h4>
+                    <p><strong>Titre :</strong> La compta vous vole votre temps ? Reprenez le contrôle.</p>
+                    <div class="mockup-visual">
+                        [Visuel d'un carrousel : "Vos soirées ressemblent à ça ? (pile de papiers)"]
+                    </div>
+                    <button class="cta-button secondary" style="margin-top: 15px;" onclick="goToScreen('screen-3')">Sélectionner ce concept</button>
+                </div>
+                <div class="concept-card">
+                    <h4>Angle 2 : Le Bénéfice</h4>
+                    <p><strong>Titre :</strong> Le secret des freelances qui ne stressent jamais avec leurs impôts.</p>
+                    <div class="mockup-visual">
+                        [Visuel d'un carrousel : "Plus de temps pour vous. (freelance relax)"]
+                    </div>
+                    <button class="cta-button secondary" style="margin-top: 15px;" onclick="goToScreen('screen-3')">Sélectionner ce concept</button>
+                </div>
+                <div class="concept-card">
+                    <h4>Angle 3 : Le Direct</h4>
+                    <p><strong>Titre :</strong> Le logiciel de compta N°1 conçu pour les freelances.</p>
+                    <div class="mockup-visual">
+                        [Visuel d'un carrousel : "Fonctionnalité A : Facturation éclair."]
+                    </div>
+                    <button class="cta-button secondary" style="margin-top: 15px;" onclick="goToScreen('screen-3')">Sélectionner ce concept</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="screen" id="screen-3">
+            <h1>Personnalisez les détails. (Étape 3/3)</h1>
+            
+            <div class="editor-layout">
+                <div class="editor-controls">
+                    <h3>Textes de la publicité</h3>
+                    <textarea>Imaginez une comptabilité si simple que vous n'y pensez plus. C'est notre promesse. Gagnez en moyenne 8h par mois...</textarea>
+                    
+                    <h3 style="margin-top: 20px;">Identité Visuelle (Branding)</h3>
+                    <p style="text-align: left; margin: 5px 0 10px;">Couleur principale :</p>
+                    <input type="text" value="#0a66c2">
+                    <p style="text-align: left; margin: 10px 0 10px;">Logo :</p>
+                    <button class="cta-button secondary" style="width: auto;">Uploader votre logo</button>
+                </div>
+                <div class="editor-preview">
+                    <p style="color: #888;">[Aperçu live de votre carrousel. <br> Il se met à jour en temps réel.]</p>
+                </div>
+            </div>
+            
+            <button class="cta-button" style="margin-top: 30px;" onclick="goToScreen('screen-4')">✓ Terminé. Sauvegarder et Exporter</button>
+        </div>
+
+        <div class="screen" id="screen-4">
+            <h1>🔥 Vous y êtes presque !</h1>
+            <p>CarouselAi est en lancement. Laissez votre email pour être le premier informé et obtenir l'accès (et un rabais de lancement).</p>
+            
+            <input type="email" placeholder="votre.email@compagnie.com" style="margin-top: 20px;">
+            
+            <button class="cta-button" onclick="goToScreen('screen-5')">Rejoindre la liste d'attente</button>
+            <p style="font-size: 0.9rem; color: #888; margin-top: 15px;">Pas de spam. Juste le lancement.</p>
+        </div>
+        
+        <div class="screen" id="screen-5">
+            <h1 style="color: #28a745;">🎉 Merci ! Vous êtes inscrit.</h1>
+            <p>Vous êtes officiellement sur la liste d'attente de CarouselAi.</p>
+            <p>Nous vous contacterons par email dès que le produit sera prêt à être testé. <br> (Et oui, vous aurez un rabais de lancement pour avoir été un des premiers !)</p>
+            
+            <button class="cta-button secondary" onclick="goToScreen('screen-1')">Créer un autre concept (Simulation)</button>
+        </div>
+
+    </div>
+
+    <script>
+        // Fonction simple pour naviguer entre les écrans
+        function goToScreen(screenId) {
+            // Cacher tous les écrans
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.style.display = 'none';
+            });
+            
+            // Si c'est le loader, on simule un chargement
+            if (screenId === 'loader') {
+                document.getElementById('loader').style.display = 'block';
+                // Simule un travail de 3 secondes
+                setTimeout(() => {
+                    goToScreen('screen-2');
+                }, 3000); // 3 secondes
+            } else {
+                // Montrer l'écran demandé
+                document.getElementById(screenId).style.display = 'block';
+                window.scrollTo(0, 0); // Remonte en haut de page
+            }
+        }
+    </script>
+
+</body>
+</html>
